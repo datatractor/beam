@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from beam import MardaExtractor, SupportedExecutionMethod, extract
+from beam import ExtractorPlan, SupportedExecutionMethod, extract
 
 
 @pytest.fixture
@@ -98,7 +98,7 @@ def test_biologic_extract_no_registry(test_mprs):
 
 
 def test_marda_extractor_template_method():
-    command = MardaExtractor.apply_template_args(
+    command = ExtractorPlan.apply_template_args(
         "parse --type=example {{ input_path }}",
         method=SupportedExecutionMethod.CLI,
         input_type="example",
@@ -110,7 +110,7 @@ def test_marda_extractor_template_method():
 
 
 def test_marda_extractor_python_method():
-    function, args, kwargs = MardaExtractor._prepare_python(
+    function, args, kwargs = ExtractorPlan._prepare_python(
         'extract("biologic-mpr", "/path/to/file")'
     )
 
@@ -118,7 +118,7 @@ def test_marda_extractor_python_method():
     assert args == ["biologic-mpr", "/path/to/file"]
     assert kwargs == {}
 
-    function, args, kwargs = MardaExtractor._prepare_python(
+    function, args, kwargs = ExtractorPlan._prepare_python(
         "extract('biologic-mpr', '/path/to/file')"
     )
 
@@ -126,7 +126,7 @@ def test_marda_extractor_python_method():
     assert args == ["biologic-mpr", "/path/to/file"]
     assert kwargs == {}
 
-    function, args, kwargs = MardaExtractor._prepare_python(
+    function, args, kwargs = ExtractorPlan._prepare_python(
         'example.extractors.extract("example.txt", type="example")'
     )
 
@@ -134,7 +134,7 @@ def test_marda_extractor_python_method():
     assert args == ["example.txt"]
     assert kwargs == {"type": "example"}
 
-    function, args, kwargs = MardaExtractor._prepare_python(
+    function, args, kwargs = ExtractorPlan._prepare_python(
         'extract(filename="example.txt", type="example")'
     )
 
@@ -143,6 +143,6 @@ def test_marda_extractor_python_method():
     assert kwargs == {"filename": "example.txt", "type": "example"}
 
     with pytest.raises(RuntimeError):
-        function, args, kwargs = MardaExtractor._prepare_python(
+        function, args, kwargs = ExtractorPlan._prepare_python(
             'extract(filename="example.txt", type={"test": "example", "dictionary": "example"})'
         )
