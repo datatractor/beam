@@ -1,0 +1,10 @@
+beam package
+============
+
+Module contents
+---------------
+
+.. automodule:: beam
+   :members:
+   :undoc-members:
+   :show-inheritance:
