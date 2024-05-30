@@ -10,9 +10,9 @@ from beam import ExtractorPlan, SupportedExecutionMethod, extract
 def test_mpr_urls():
     return [
         "https://github.com/the-grey-group/datalab/raw/main/pydatalab/example_data/echem/jdb11-1_c3_gcpl_5cycles_2V-3p8V_C-24_data_C09.mpr",
-        "https://github.com/marda-alliance/metadata_extractors_registry/raw/main/marda_registry/data/lfs/biologic-mpr/peis.mpr",
-        "https://github.com/marda-alliance/metadata_extractors_registry/raw/main/marda_registry/data/lfs/biologic-mpr/ca.mpr",
-        "https://github.com/marda-alliance/metadata_extractors_registry/raw/main/marda_registry/data/lfs/biologic-mpr/gcpl.mpr",
+        "https://github.com/datatractor/yard/raw/main/yard/data/lfs/biologic-mpr/peis.mpr",
+        "https://github.com/datatractor/yard/raw/main/yard/data/lfs/biologic-mpr/ca.mpr",
+        "https://github.com/datatractor/yard/raw/main/yard/data/lfs/biologic-mpr/gcpl.mpr",
     ]
 
 
