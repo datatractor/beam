@@ -180,7 +180,7 @@ class ExtractorPlan:
     def install(self):
         """Follows the installation instructions for the entry.
 
-        Currently supports the following :doc:`mme_schema:mme_schema/InstallerTypes`
+        Currently supports the following :doc:`datatractor_schema:datatractor_schema/InstallerTypes`
 
            - ``"pip"``
 
@@ -226,7 +226,7 @@ class ExtractorPlan:
     ):
         """Follows the required usage instructions for the entry.
 
-        Currently supports the following :doc:`mme_schema:mme_schema/UsageTypes`:
+        Currently supports the following :doc:`datatractor_schema:datatractor_schema/UsageTypes`:
 
           - `"cli"`
           - `"python"`
