@@ -97,7 +97,7 @@ def test_biologic_extract_no_registry(test_mprs):
         assert data
 
 
-def test_marda_extractor_template_method():
+def test_extractorplan_template_method():
     command = ExtractorPlan.apply_template_args(
         "parse --type=example {{ input_path }}",
         method=SupportedExecutionMethod.CLI,
@@ -109,7 +109,7 @@ def test_marda_extractor_template_method():
     assert command == "parse --type=example example.txt"
 
 
-def test_marda_extractor_python_method():
+def test_extractorplan_python_method():
     function, args, kwargs = ExtractorPlan._prepare_python(
         'extract("biologic-mpr", "/path/to/file")'
     )
