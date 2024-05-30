@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from marda_extractors_api import MardaExtractor, SupportedExecutionMethod, extract
+from beam import MardaExtractor, SupportedExecutionMethod, extract
 
 
 @pytest.fixture

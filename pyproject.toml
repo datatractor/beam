@@ -9,10 +9,10 @@ source = "vcs"
 version-file = "_version.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["marda_extractors_api"]
+packages = ["beam"]
 
 [project]
-name = "marda-extractors-api"
+name = "datatractor-beam"
 readme = "README.md"
 dynamic = ["version"]
 classifiers = [
@@ -51,7 +51,7 @@ dev = [
 ]
 
 [project.urls]
-repository = "https://github.com/marda-alliance/metadata_extractors_api"
+repository = "https://github.com/datatractor/beam"
 
 [tool.ruff]
 select = ["E", "F", "I", "W", "Q"]
