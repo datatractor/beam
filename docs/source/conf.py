@@ -70,7 +70,7 @@ html_context = {
     "github_user": "datatractor",
     "github_repo": "beam",
     "github_version": version,
-    "conf_py_path": "/docs/source/"
+    "conf_py_path": "/docs/source/",
 }
 html_logo = "https://avatars.githubusercontent.com/u/166528759"
 html_favicon = "https://datatractor.github.io/schema/main/_images/166528759-32x32.png"
