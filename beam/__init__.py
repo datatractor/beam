@@ -13,7 +13,7 @@ API endpoints exposed on the |yardsite|_. Currently, it can be used to:
 .. _yardsite: https://yard.datatractor.org/
 
 """
-
+import argparse
 import json
 import multiprocessing.managers
 import multiprocessing.shared_memory
@@ -24,12 +24,11 @@ import subprocess
 import urllib.error
 import urllib.request
 import venv
-import argparse
 from enum import Enum
+from importlib import metadata
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable, Optional
-from importlib import metadata
 
 __all__ = ("extract", "Extractor")
 
@@ -68,11 +67,19 @@ def run_beam():
         default=None,
     )
 
+    argparser.add_argument(
+        "--outfile",
+        "-o",
+        help="Optional path of the output file",
+        default=None,
+    )
+
     args = argparser.parse_args()
 
     extract(
         input_path=args.infile,
         input_type=args.filetype,
+        output_path=args.outfile,
         preferred_mode=SupportedExecutionMethod.CLI,
     )
 
