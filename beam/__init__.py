@@ -111,8 +111,8 @@ def extract(
                 raise RuntimeError(
                     f"No extractors found for file type {input_type!r} in the registry"
                 )
-            elif len(extractors) > 1:
-                print(f"Discovered multiple extractors: {extractors}.")
+            elif len(extractors) > 0:
+                print(f"Discovered the following extractors: {extractors}.")
 
             for extractor in extractors:
                 try:
@@ -133,6 +133,7 @@ def extract(
                         print(f"Found matching usage with extractor: {extractor!r}")
                         break
                 else:
+                    # We reset entry_json here since we didn't find matching usage.
                     entry_json = None
             if entry_json is None:
                 raise RuntimeError(
