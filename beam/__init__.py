@@ -24,10 +24,12 @@ import subprocess
 import urllib.error
 import urllib.request
 import venv
+import argparse
 from enum import Enum
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable, Optional
+from importlib import metadata
 
 __all__ = ("extract", "Extractor")
 
@@ -46,6 +48,35 @@ class SupportedInstallationMethod(Enum):
     CONDA = "conda"
 
 
+def run_beam():
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument(
+        "--version",
+        action="version",
+        version=f'%(prog)s version {metadata.version("datatractor_beam")}',
+    )
+
+    argparser.add_argument(
+        "filetype",
+        help="FileType.ID of the input file",
+        default=None,
+    )
+
+    argparser.add_argument(
+        "infile",
+        help="Path of the input file",
+        default=None,
+    )
+
+    args = argparser.parse_args()
+
+    extract(
+        input_path=args.infile,
+        input_type=args.filetype,
+        preferred_mode=SupportedExecutionMethod.CLI,
+    )
+
+
 def extract(
     input_path: Path | str,
     input_type: str,
@@ -61,15 +92,16 @@ def extract(
 
     Parameters:
         input_path: The path or URL of the file to parse.
-        input_type: The ID of the `FileType` in the registry.
+        input_type: The ID of the ``FileType`` in the registry.
         output_path: The path to write the output to.
             If not provided, the output will be requested to be written
-            to a file with the same name as the input file, but with a .json extension.
+            to a file with the same name as the input file, but with an extension as
+            defined using the ``output_type``. Defaults to ``{input_path}.out``.
         output_type: A string specifying the desired output type.
         preferred_mode: The preferred execution method.
             If the extractor supports both Python and CLI, this will be used to determine
             which to use. If the extractor only supports one method, this will be ignored.
-            Accepts the `SupportedExecutionMethod` values of "cli" or "python".
+            Accepts the ``SupportedExecutionMethod`` values of "cli" or "python".
         install: Whether to install the extractor package before running it. Defaults to True.
         extractor_definition: A dictionary containing the extractor definition to use instead
             of a registry lookup.
@@ -265,7 +297,10 @@ class ExtractorPlan:
         )
 
         if output_path is None:
-            output_path = input_path.with_suffix(".json")
+            suffix = ".out" if output_type is None else f".{output_type}"
+            output_path = input_path.with_suffix(suffix)
+
+        print(f"{output_type=}")
 
         command = self.apply_template_args(
             command,
