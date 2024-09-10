@@ -111,20 +111,34 @@ def extract(
                 raise RuntimeError(
                     f"No extractors found for file type {input_type!r} in the registry"
                 )
-            elif len(extractors) > 1:
-                print(
-                    f"Discovered multiple extractors: {extractors}, using the first ({extractors[0]})"
-                )
+            elif len(extractors) > 0:
+                print(f"Discovered the following extractors: {extractors}.")
 
-            extractor = extractors[0]
-            try:
-                request_url = f"{registry_base_url}/extractors/{extractor}"
-                entry = urllib.request.urlopen(request_url)
-            except urllib.error.HTTPError as e:
+            for extractor in extractors:
+                try:
+                    request_url = f"{registry_base_url}/extractors/{extractor}"
+                    entry = urllib.request.urlopen(request_url)
+                except urllib.error.HTTPError as e:
+                    raise RuntimeError(
+                        f"Could not find extractor {extractor!r} in the registry at {request_url!r}.\nFull error: {e}"
+                    )
+                entry_json = json.loads(entry.read().decode("utf-8"))["data"]
+                for usage in entry_json["usage"]:
+                    if preferred_mode != SupportedExecutionMethod(usage["method"]):
+                        continue
+                    if (
+                        input_type in usage["supported_filetypes"]
+                        or usage["supported_filetypes"] == []
+                    ):
+                        print(f"Found matching usage with extractor: {extractor!r}")
+                        break
+                else:
+                    # We reset entry_json here since we didn't find matching usage.
+                    entry_json = None
+            if entry_json is None:
                 raise RuntimeError(
-                    f"Could not find extractor {extractor!r} in the registry at {request_url!r}.\nFull error: {e}"
+                    "No extractors found with the preferred execution mode and input type."
                 )
-            entry_json = json.loads(entry.read().decode("utf-8"))["data"]
 
             plan = ExtractorPlan(
                 entry_json,
