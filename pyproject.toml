@@ -43,7 +43,8 @@ docs = [
 
 formats = [
     "pandas",
-    "xarray"
+    "xarray",
+    "xarray-datatree",
 ]
 
 dev = [
