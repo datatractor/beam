@@ -13,6 +13,7 @@ API endpoints exposed on the |yardsite|_. Currently, it can be used to:
 .. _yardsite: https://yard.datatractor.org/
 
 """
+
 import argparse
 import json
 import multiprocessing.managers
