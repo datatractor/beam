@@ -15,6 +15,7 @@ API endpoints exposed on the |yardsite|_. Currently, it can be used to:
 """
 
 import argparse
+import importlib.metadata
 import json
 import multiprocessing.managers
 import multiprocessing.shared_memory
@@ -26,12 +27,12 @@ import urllib.error
 import urllib.request
 import venv
 from enum import Enum
-from importlib import metadata
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable, Optional
 
 __all__ = ("extract", "Extractor")
+__version__ = importlib.metadata.version("datatractor-beam")
 
 REGISTRY_BASE_URL = "https://yard.datatractor.org/api/v0.1.0"
 BIN = "Scripts" if platform.system() == "Windows" else "bin"
@@ -49,11 +50,15 @@ class SupportedInstallationMethod(Enum):
 
 
 def run_beam():
-    argparser = argparse.ArgumentParser()
+    argparser = argparse.ArgumentParser(
+        prog="beam",
+        description="""CLI for datatractor extractors that takes a filename and a filetype, then installs and runs an appropriate extractor, if available, from the chosen registry (default: https://registry.datatractor.org/). Filetype IDs can be found in the registry API at e.g., https://registry.datatractor.org/api/filetypes. If a matching extractor is found at https://registry.datatractor.org/api/extractors, it will be installed into a virtual environment local to the beam installation. The results of the extractor will be written out to a file at --outfile, or in the default location for that output file type.""",
+    )
+
     argparser.add_argument(
         "--version",
         action="version",
-        version=f'%(prog)s version {metadata.version("datatractor_beam")}',
+        version=f"%(prog)s version {__version__}",
     )
 
     argparser.add_argument(
@@ -307,8 +312,6 @@ class ExtractorPlan:
         if output_path is None:
             suffix = ".out" if output_type is None else f".{output_type}"
             output_path = input_path.with_suffix(suffix)
-
-        print(f"{output_type=}")
 
         command = self.apply_template_args(
             command,
