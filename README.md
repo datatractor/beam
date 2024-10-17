@@ -62,7 +62,7 @@ ret = extract("example.mpr", "biologic-mpr", output_path="output.nc", preferred_
 
 In this case, the `ret` will be empty bytes, and the output of the extractor should appear in the `output.nc` file.
 
-Finally, `beam` can also be executed from the command line, implying `preferred_mode="cli"`. The command line invocation equivalent to the above python syntax is:
+Finally, `beam` can also be executed from the command line, implying `preferred_mode="cli"`. The command line invocation equivalent to the above Python syntax is:
 
 ```bash
 beam biologic-mpr example.mpr --outfile output.nc
