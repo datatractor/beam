@@ -103,15 +103,16 @@ on disk.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>input_path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The path or URL of the file to parse.</p></li>
-<li><p><strong>input_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The ID of the <cite>FileType</cite> in the registry.</p></li>
+<li><p><strong>input_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The ID of the <code class="docutils literal notranslate"><span class="pre">FileType</span></code> in the registry.</p></li>
 <li><p><strong>output_path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</span>) – The path to write the output to.
 If not provided, the output will be requested to be written
-to a file with the same name as the input file, but with a .json extension.</p></li>
+to a file with the same name as the input file, but with an extension as
+defined using the <code class="docutils literal notranslate"><span class="pre">output_type</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">{input_path}.out</span></code>.</p></li>
 <li><p><strong>output_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – A string specifying the desired output type.</p></li>
 <li><p><strong>preferred_mode</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupportedExecutionMethod</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – The preferred execution method.
 If the extractor supports both Python and CLI, this will be used to determine
 which to use. If the extractor only supports one method, this will be ignored.
-Accepts the <cite>SupportedExecutionMethod</cite> values of “cli” or “python”.</p></li>
+Accepts the <code class="docutils literal notranslate"><span class="pre">SupportedExecutionMethod</span></code> values of “cli” or “python”.</p></li>
 <li><p><strong>install</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to install the extractor package before running it. Defaults to True.</p></li>
 <li><p><strong>extractor_definition</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>]</span>) – A dictionary containing the extractor definition to use instead
 of a registry lookup.</p></li>
