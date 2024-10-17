@@ -14,6 +14,8 @@ API endpoints exposed on the |yardsite|_. Currently, it can be used to:
 
 """
 
+import argparse
+import importlib.metadata
 import json
 import multiprocessing.managers
 import multiprocessing.shared_memory
@@ -30,6 +32,7 @@ from types import ModuleType
 from typing import Any, Callable, Optional
 
 __all__ = ("extract", "Extractor")
+__version__ = importlib.metadata.version("datatractor-beam")
 
 REGISTRY_BASE_URL = "https://yard.datatractor.org/api/v0.1.0"
 BIN = "Scripts" if platform.system() == "Windows" else "bin"
@@ -44,6 +47,47 @@ class SupportedExecutionMethod(Enum):
 class SupportedInstallationMethod(Enum):
     PIP = "pip"
     CONDA = "conda"
+
+
+def run_beam():
+    argparser = argparse.ArgumentParser(
+        prog="beam",
+        description="""CLI for datatractor extractors that takes a filename and a filetype, then installs and runs an appropriate extractor, if available, from the chosen registry (default: https://registry.datatractor.org/). Filetype IDs can be found in the registry API at e.g., https://registry.datatractor.org/api/filetypes. If a matching extractor is found at https://registry.datatractor.org/api/extractors, it will be installed into a virtual environment local to the beam installation. The results of the extractor will be written out to a file at --outfile, or in the default location for that output file type.""",
+    )
+
+    argparser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s version {__version__}",
+    )
+
+    argparser.add_argument(
+        "filetype",
+        help="FileType.ID of the input file",
+        default=None,
+    )
+
+    argparser.add_argument(
+        "infile",
+        help="Path of the input file",
+        default=None,
+    )
+
+    argparser.add_argument(
+        "--outfile",
+        "-o",
+        help="Optional path of the output file",
+        default=None,
+    )
+
+    args = argparser.parse_args()
+
+    extract(
+        input_path=args.infile,
+        input_type=args.filetype,
+        output_path=args.outfile,
+        preferred_mode=SupportedExecutionMethod.CLI,
+    )
 
 
 def extract(
@@ -61,15 +105,16 @@ def extract(
 
     Parameters:
         input_path: The path or URL of the file to parse.
-        input_type: The ID of the `FileType` in the registry.
+        input_type: The ID of the ``FileType`` in the registry.
         output_path: The path to write the output to.
             If not provided, the output will be requested to be written
-            to a file with the same name as the input file, but with a .json extension.
+            to a file with the same name as the input file, but with an extension as
+            defined using the ``output_type``. Defaults to ``{input_path}.out``.
         output_type: A string specifying the desired output type.
         preferred_mode: The preferred execution method.
             If the extractor supports both Python and CLI, this will be used to determine
             which to use. If the extractor only supports one method, this will be ignored.
-            Accepts the `SupportedExecutionMethod` values of "cli" or "python".
+            Accepts the ``SupportedExecutionMethod`` values of "cli" or "python".
         install: Whether to install the extractor package before running it. Defaults to True.
         extractor_definition: A dictionary containing the extractor definition to use instead
             of a registry lookup.
@@ -265,7 +310,8 @@ class ExtractorPlan:
         )
 
         if output_path is None:
-            output_path = input_path.with_suffix(".json")
+            suffix = ".out" if output_type is None else f".{output_type}"
+            output_path = input_path.with_suffix(suffix)
 
         command = self.apply_template_args(
             command,

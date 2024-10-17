@@ -14,7 +14,7 @@
 
 Repository containing the reference implementation of the Datatractor API, published at [![Datatractor Yard](https://badgen.net/static/%F0%9F%9A%9Cdatatractor/yard)](https://yard.datatractor.org/).
 
-## `datatractor_beam` package
+## `datatractor-beam` package
 
 This repository contains a draft Python 3.10 package, located under the `./beam` directory.
 The package can be used to:
@@ -62,6 +62,12 @@ ret = extract("example.mpr", "biologic-mpr", output_path="output.nc", preferred_
 
 In this case, the `ret` will be empty bytes, and the output of the extractor should appear in the `output.nc` file.
 
+Finally, `beam` can also be executed from the command line, implying `preferred_mode="cli"`. The command line invocation equivalent to the above Python syntax is:
+
+```bash
+beam biologic-mpr example.mpr --outfile output.nc
+```
+
 
 ### Plans
 
@@ -77,7 +83,7 @@ In this case, the `ret` will be empty bytes, and the output of the extractor sho
       across subprocesses without any extractor specific classes,
       e.g., raw JSON/Python dicts, pandas dataframes or xarray datasets (as
       optional requirements, by demand).
-- [ ] A command-line for quickly running e.g., `beam <filename>`
+- [x] A command-line for quickly running e.g., `beam <filename>`
 - [ ] Extractor scaffold/template/plugin
     - If it can be kept similarly low-dependency, this package could also
       implement an extractor scaffold for those who want to modify existing

@@ -1,3 +1,4 @@
+import subprocess
 import urllib.request
 from pathlib import Path
 
@@ -146,3 +147,13 @@ def test_extractorplan_python_method():
         function, args, kwargs = ExtractorPlan._prepare_python(
             'extract(filename="example.txt", type={"test": "example", "dictionary": "example"})'
         )
+
+
+def test_biologic_beam(tmp_path, test_mprs):
+    for ind, test_mpr in enumerate(test_mprs):
+        input_path = tmp_path / test_mpr
+        output_path = tmp_path / test_mpr.name.replace(".mpr", ".nc")
+        task = ["beam", "biologic-mpr", str(input_path), "--outfile", str(output_path)]
+        subprocess.run(task)
+        assert output_path.exists()
+        break
