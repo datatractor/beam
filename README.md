@@ -14,7 +14,7 @@
 
 Repository containing the reference implementation of the Datatractor API, published at [![Datatractor Yard](https://badgen.net/static/%F0%9F%9A%9Cdatatractor/yard)](https://yard.datatractor.org/).
 
-## `datatractor_beam` package
+## `datatractor-beam` package
 
 This repository contains a draft Python 3.10 package, located under the `./beam` directory.
 The package can be used to:
