@@ -14,6 +14,13 @@
 
 Repository containing the reference implementation of the Datatractor API, published at [![Datatractor Yard](https://badgen.net/static/%F0%9F%9A%9Cdatatractor/yard)](https://yard.datatractor.org/).
 
+
+For more information, see the preprint:
+
+> **Datatractor: Metadata, automation, and registries for extractor interoperability in the chemical and materials sciences**  
+> Matthew L. Evans, Gian-Marco Rignanese, David Elbert & Peter Kraus  
+> [arXiv:2410.18839](https://arxiv.org/abs/2410.18839) (2024)
+
 ## `datatractor-beam` package
 
 This repository contains a draft Python 3.10 package, located under the `./beam` directory.
