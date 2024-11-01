@@ -30,8 +30,6 @@ The package can be used to:
 - install those extractors in a fresh Python virtual environment environment via `pip`,
 - invoke the extractor either in Python or at the CLI, producing Python objects or files on disk.
 
-
-
 ### Installation
 
 ```shell
