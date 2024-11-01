@@ -34,7 +34,7 @@ from typing import Any, Callable, Optional
 __all__ = ("extract", "Extractor")
 __version__ = importlib.metadata.version("datatractor-beam")
 
-REGISTRY_BASE_URL = "https://yard.datatractor.org/api/v0.1.0"
+REGISTRY_BASE_URL = "https://yard.datatractor.org/api/"
 BIN = "Scripts" if platform.system() == "Windows" else "bin"
 
 
