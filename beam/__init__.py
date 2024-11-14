@@ -514,7 +514,7 @@ class ExtractorPlan:
         for usages in usage:
             method = SupportedExecutionMethod(usages["method"])
             command = usages["command"]
-            setup = usages["setup"]
+            setup = usages.get("setup", None)
 
             if method == preferred_mode:
                 return method, command, setup
