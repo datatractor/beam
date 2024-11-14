@@ -34,7 +34,7 @@ from typing import Any, Callable, Optional
 __all__ = ("extract", "Extractor")
 __version__ = importlib.metadata.version("datatractor-beam")
 
-REGISTRY_BASE_URL = "https://yard.datatractor.org/api/"
+REGISTRY_BASE_URL = "https://yard.datatractor.org/api"
 BIN = "Scripts" if platform.system() == "Windows" else "bin"
 
 
@@ -172,8 +172,9 @@ def extract(
                     if preferred_mode != SupportedExecutionMethod(usage["method"]):
                         continue
                     if (
-                        input_type in usage["supported_filetypes"]
+                        usage["supported_filetypes"] is None
                         or usage["supported_filetypes"] == []
+                        or input_type in usage["supported_filetypes"]
                     ):
                         print(f"Found matching usage with extractor: {extractor!r}")
                         break
