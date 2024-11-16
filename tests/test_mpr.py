@@ -48,7 +48,7 @@ def test_biologic_extract(tmp_path, preferred_mode, test_mprs):
             install=(ind == 0),
         )
         if preferred_mode == "python":
-            assert data
+            assert data is not None
         else:
             assert output_path.exists()
 
