@@ -49,6 +49,11 @@ class SupportedInstallationMethod(Enum):
     CONDA = "conda"
 
 
+class SupportedUsageScope(Enum):
+    META = "meta-only"
+    DATA = "meta+data"
+
+
 def run_beam():
     argparser = argparse.ArgumentParser(
         prog="beam",
@@ -96,6 +101,7 @@ def extract(
     output_path: Path | str | None = None,
     output_type: str | None = None,
     preferred_mode: SupportedExecutionMethod | str = SupportedExecutionMethod.PYTHON,
+    preferred_scope: SupportedUsageScope | str = SupportedUsageScope.DATA,
     install: bool = True,
     use_venv: bool = True,
     extractor_definition: dict | None = None,
@@ -141,6 +147,8 @@ def extract(
 
         if isinstance(preferred_mode, str):
             preferred_mode = SupportedExecutionMethod(preferred_mode)
+        if isinstance(preferred_scope, str):
+            preferred_scope = SupportedUsageScope(preferred_scope)
 
         if extractor_definition is None:
             try:
@@ -158,8 +166,12 @@ def extract(
                 )
             elif len(extractors) > 0:
                 print(f"Discovered the following extractors: {extractors}.")
+        else:
+            extractors = [extractor_definition]
 
-            for extractor in extractors:
+        matching_definition = None
+        for extractor in extractors:
+            if isinstance(extractor, str):
                 try:
                     request_url = f"{registry_base_url}/extractors/{extractor}"
                     entry = urllib.request.urlopen(request_url)
@@ -167,39 +179,30 @@ def extract(
                     raise RuntimeError(
                         f"Could not find extractor {extractor!r} in the registry at {request_url!r}.\nFull error: {e}"
                     )
-                entry_json = json.loads(entry.read().decode("utf-8"))["data"]
-                for usage in entry_json["usage"]:
-                    if preferred_mode != SupportedExecutionMethod(usage["method"]):
-                        continue
-                    if (
-                        usage["supported_filetypes"] is None
-                        or usage["supported_filetypes"] == []
-                        or input_type in usage["supported_filetypes"]
-                    ):
-                        print(f"Found matching usage with extractor: {extractor!r}")
-                        break
-                else:
-                    # We reset entry_json here since we didn't find matching usage.
-                    entry_json = None
-            if entry_json is None:
-                raise RuntimeError(
-                    "No extractors found with the preferred execution mode and input type."
-                )
+                extractor = json.loads(entry.read().decode("utf-8"))["data"]
 
-            plan = ExtractorPlan(
-                entry_json,
+            match = find_matching_usage(
+                usages=extractor["usage"],
+                input_type=input_type,
                 preferred_mode=preferred_mode,
-                install=install,
-                use_venv=use_venv,
+                preferred_scope=preferred_scope,
+                strict=True,
             )
+            if match is not None:
+                print(f"Found matching usage with extractor: {extractor['id']!r}")
+                matching_definition = extractor
+                break
 
-        else:
-            plan = ExtractorPlan(
-                extractor_definition,
-                preferred_mode=preferred_mode,
-                install=install,
-                use_venv=use_venv,
+        if matching_definition is None:
+            raise RuntimeError(
+                "No extractors found with the preferred execution mode and input type."
             )
+        plan = ExtractorPlan(
+            matching_definition,
+            preferred_mode=preferred_mode,
+            install=install,
+            use_venv=use_venv,
+        )
 
         return plan.execute(
             input_type=input_type,
@@ -210,6 +213,60 @@ def extract(
     finally:
         if tmp_path:
             tmp_path.unlink()
+
+
+def find_matching_usage(
+    usages: list[dict],
+    input_type: str,
+    preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
+    preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
+    strict: bool = False,
+) -> dict:
+    """
+    Find the usage among usages that best matches the requirements. If strict is True,
+    all criteria must be fulfilled.
+
+    Returns the usage that best matches the requirements, following these criteria:
+
+     - The matching usage must match the ``input_type``; if there is no usage that
+       matches, ``None`` is returned.
+     - The matching usage should match the preferred execution method (``preferred_mode``).
+       If there is no such usage, a warning is raised, but a usage is still returned.
+     - The matching usage should match the preferred extraction scope (``preferred_scope``).
+       If there is no such usage, a warning is raised, but a usage is still returned.
+
+    Raises:
+        RuntimeError if no matching usage is found.
+
+    """
+    candidates: dict[str, Any] = {"mode": None, "scope": None}
+    for usage in usages:
+        if (
+            usage["supported_filetypes"] is None
+            or input_type in usage["supported_filetypes"]
+        ):
+            thisMethod = SupportedExecutionMethod(usage["method"])
+            if (
+                usage["scope"] is None
+            ):  # HACK - default should be "meta+data" -- can remove after schema 1.0.2
+                usage["scope"] = "meta+data"
+            thisScope = SupportedUsageScope(usage["scope"])
+            if thisMethod == preferred_mode and thisScope == preferred_scope:
+                return usage
+            elif thisMethod == preferred_mode:
+                candidates["mode"] = usage
+            elif thisScope == preferred_scope:
+                candidates["scope"] = usage
+    if not strict and candidates["mode"] is not None:
+        print("Found usage with matching execution method but wrong extraction scope.")
+        return candidates["mode"]
+    if not strict and candidates["scope"] is not None:
+        print("Found usage with matching extraction scope but wrong execution method.")
+        return candidates["scope"]
+
+    raise RuntimeError(
+        f"Found no matching usage for input_type {input_type!r} with {preferred_mode} and {preferred_scope}"
+    )
 
 
 class ExtractorPlan:
@@ -223,11 +280,13 @@ class ExtractorPlan:
         entry: dict,
         install: bool = True,
         preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
+        preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
         use_venv: bool = True,
     ):
         """Initialize the plan, optionally installing the specific parser package."""
         self.entry = entry
         self.preferred_mode = preferred_mode
+        self.preferred_scope = preferred_scope
 
         if use_venv:
             self.venv_dir: Path | None = (
@@ -307,7 +366,10 @@ class ExtractorPlan:
             )
 
         method, command, setup = self.parse_usage(
-            self.entry["usage"], preferred_mode=self.preferred_mode
+            self.entry["usage"],
+            input_type,
+            preferred_mode=self.preferred_mode,
+            preferred_scope=self.preferred_scope,
         )
 
         if output_path is None:
@@ -508,15 +570,19 @@ class ExtractorPlan:
 
     @staticmethod
     def parse_usage(
-        usage: list[dict],
+        usages: list[dict],
+        input_type: str,
         preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
+        preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
     ) -> tuple[SupportedExecutionMethod, str, str]:
-        for usages in usage:
-            method = SupportedExecutionMethod(usages["method"])
-            command = usages["command"]
-            setup = usages["setup"]
 
-            if method == preferred_mode:
-                return method, command, setup
+        usage = find_matching_usage(usages, input_type, preferred_mode, preferred_scope)
+        if not usage:
+            raise RuntimeError(
+                f"No matching usage found for {input_type} with {preferred_mode} and {preferred_scope}"
+            )
 
-        return method, command, setup
+        method = usage["method"]
+        command = usage["command"]
+        setup = usage.get("setup", None)
+        return SupportedExecutionMethod(method), command, setup

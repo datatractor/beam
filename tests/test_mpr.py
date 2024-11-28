@@ -48,7 +48,7 @@ def test_biologic_extract(tmp_path, preferred_mode, test_mprs):
             install=(ind == 0),
         )
         if preferred_mode == "python":
-            assert data
+            assert data is not None
         else:
             assert output_path.exists()
 
@@ -74,6 +74,7 @@ def test_biologic_extract_no_registry(test_mprs):
             "biologic-mpr",
             output_path=output_path,
             preferred_mode="python",
+            preferred_scope="meta-only",
             install=(ind == 0),
             extractor_definition={
                 "id": "yadg",
@@ -83,6 +84,8 @@ def test_biologic_extract_no_registry(test_mprs):
                         "method": "python",
                         "setup": "yadg",
                         "command": "yadg.extractors.extract({{ input_type }}, {{ input_path }})",
+                        "supported_filetypes": None,
+                        "scope": "meta-only",
                     }
                 ],
                 "installation": [
