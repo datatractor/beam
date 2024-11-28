@@ -221,7 +221,7 @@ def find_matching_usage(
     preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
     preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
     strict: bool = False,
-) -> dict | None:
+) -> dict:
     """
     Find the usage among usages that best matches the requirements. If strict is True,
     all criteria must be fulfilled.
@@ -234,15 +234,21 @@ def find_matching_usage(
        If there is no such usage, a warning is raised, but a usage is still returned.
      - The matching usage should match the preferred extraction scope (``preferred_scope``).
        If there is no such usage, a warning is raised, but a usage is still returned.
+
+    Raises:
+        RuntimeError if no matching usage is found.
+
     """
-    candidates = {"mode": None, "scope": None}
+    candidates: dict[str, Any] = {"mode": None, "scope": None}
     for usage in usages:
         if (
             usage["supported_filetypes"] is None
             or input_type in usage["supported_filetypes"]
         ):
             thisMethod = SupportedExecutionMethod(usage["method"])
-            if usage["scope"] is None:  # HACK - default should be "meta+data"
+            if (
+                usage["scope"] is None
+            ):  # HACK - default should be "meta+data" -- can remove after schema 1.0.2
                 usage["scope"] = "meta+data"
             thisScope = SupportedUsageScope(usage["scope"])
             if thisMethod == preferred_mode and thisScope == preferred_scope:
@@ -257,8 +263,10 @@ def find_matching_usage(
     if not strict and candidates["scope"] is not None:
         print("Found usage with matching extraction scope but wrong execution method.")
         return candidates["scope"]
-    print(f"Found no matching usage for input_type {input_type!r}")
-    return None
+
+    raise RuntimeError(
+        f"Found no matching usage for input_type {input_type!r} with {preferred_mode} and {preferred_scope}"
+    )
 
 
 class ExtractorPlan:
@@ -567,7 +575,13 @@ class ExtractorPlan:
         preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
         preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
     ) -> tuple[SupportedExecutionMethod, str, str]:
+
         usage = find_matching_usage(usages, input_type, preferred_mode, preferred_scope)
+        if not usage:
+            raise RuntimeError(
+                f"No matching usage found for {input_type} with {preferred_mode} and {preferred_scope}"
+            )
+
         method = usage["method"]
         command = usage["command"]
         setup = usage.get("setup", None)
