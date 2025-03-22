@@ -575,7 +575,6 @@ class ExtractorPlan:
         preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
         preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
     ) -> tuple[SupportedExecutionMethod, str, str]:
-
         usage = find_matching_usage(usages, input_type, preferred_mode, preferred_scope)
         if not usage:
             raise RuntimeError(
