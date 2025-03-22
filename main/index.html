@@ -99,7 +99,7 @@ pip<span class="w"> </span>install<span class="w"> </span>.
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
 <p>Currently, you can use the <code class="docutils literal notranslate"><span class="pre">extract</span></code> function from the <a class="reference internal" href="apidoc/beam.html#module-beam" title="beam"><code class="xref py py-mod docutils literal notranslate"><span class="pre">beam</span></code></a> module inside your own Python code:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">beam</span> <span class="kn">import</span> <span class="n">extract</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">beam</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract</span>
 
 <span class="c1"># extract(&lt;input_type&gt;, &lt;input_path&gt;)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">extract</span><span class="p">(</span><span class="s2">&quot;./example.mpr&quot;</span><span class="p">,</span>  <span class="s2">&quot;biologic-mpr&quot;</span><span class="p">)</span>
@@ -114,7 +114,7 @@ pip<span class="w"> </span>install<span class="w"> </span>.
 </pre></div>
 </div>
 <p>Alternatively, if the <code class="docutils literal notranslate"><span class="pre">preferred_mode=&quot;cli&quot;</span></code> argument is specified, the extractor will be executed using its command-line invocation. This means the output of the extractor will most likely be a file, which can be further specified using the <code class="docutils literal notranslate"><span class="pre">output_type</span></code> argument:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">beam</span> <span class="kn">import</span> <span class="n">extract</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">beam</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract</span>
 <span class="n">ret</span> <span class="o">=</span> <span class="n">extract</span><span class="p">(</span><span class="s2">&quot;example.mpr&quot;</span><span class="p">,</span> <span class="s2">&quot;biologic-mpr&quot;</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;output.nc&quot;</span><span class="p">,</span> <span class="n">preferred_mode</span> <span class="o">=</span> <span class="s2">&quot;cli&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
