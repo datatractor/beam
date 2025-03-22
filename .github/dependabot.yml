@@ -2,11 +2,10 @@
 version: 2
 updates:
     - package-ecosystem: github-actions
-      directory: /
       schedule:
           day: monday
           interval: monthly
-          time: 05:33
+          time: "05:33"
       target-branch: main
       groups:
           github-actions:
