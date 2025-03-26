@@ -84,7 +84,7 @@ def coerce_preferred(func):
 def run_datatractor():
     parser = argparse.ArgumentParser(
         prog="datatractor",
-        description="CLI for the reference implementation of the Datatractor project.",  # extractors. that takes a filename and a filetype, then installs and runs an appropriate extractor, if available, from the chosen registry (default: https://registry.datatractor.org/). Filetype IDs can be found in the registry API at e.g., https://registry.datatractor.org/api/filetypes. If a matching extractor is found at https://registry.datatractor.org/api/extractors, it will be installed into a virtual environment local to the beam installation. The results of the extractor will be written out to a file at --outfile, or in the default location for that output file type.""",
+        description="CLI for the reference implementation of the Datatractor project.",
     )
 
     parser.add_argument(
@@ -122,6 +122,12 @@ def run_datatractor():
         "-o",
         help="Optional path of the output file",
         default=None,
+    )
+    beam.add_argument(
+        "--preferred_mode",
+        help="Preferred extraction mode to use with the Extractor (default: cli).",
+        default="cli",
+        choices=["cli", "python"],
     )
     beam.set_defaults(func=extract)
 
@@ -197,7 +203,6 @@ def run_datatractor():
         )
 
     args = parser.parse_args()
-    print(args)
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
     else:
@@ -347,7 +352,6 @@ def extract(
         The output of the extractor, either a Python object or nothing.
 
     """
-
     tmp_path: Optional[Path] = None
     try:
         if isinstance(input_path, str) and re.match("^http[s]://*", input_path):
