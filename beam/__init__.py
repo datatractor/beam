@@ -171,10 +171,14 @@ def run_datatractor():
         help="Extractor.ID of the requested extractor.",
     )
     install.add_argument(
-        "--use_venv",
-        action="store_true",
-        help="Install into a separate venv.",
-        default=False,
+        "--no-use-venv",
+        action="store_false",
+        dest="use_venv",
+        help="""
+            Do not install into a separate venv. Note: this will try to install the
+            Extractor into your current Python environment, using pip!
+        """,
+        default=True,
     )
     install.set_defaults(func=install_extractor)
 
@@ -193,6 +197,7 @@ def run_datatractor():
         )
 
     args = parser.parse_args()
+    print(args)
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
     else:
@@ -559,13 +564,19 @@ class ExtractorPlan:
                             "install",
                             f"{p}",
                         ]
+                        logger.info("Running installation command '%s'", command)
                         ret = subprocess.run(
-                            command, check=True, capture_output=True, text=True
+                            command,
+                            text=True,
+                            stderr=subprocess.STDOUT,
+                            stdout=subprocess.PIPE,
                         )
                         for line in ret.stdout.split("\n"):
-                            logger.debug("venv:%s", line)
+                            logger.debug(line)
+                        ret.check_returncode()
                     break
-                except Exception:
+                except Exception as e:
+                    logger.critical(e)
                     continue
             else:
                 raise RuntimeError(
