@@ -78,7 +78,14 @@ def test_biologic_extract_no_registry(test_mprs):
             install=(ind == 0),
             extractor_definition={
                 "id": "yadg",
-                "supported_filetypes": [{"id": "biologic-mpr"}],
+                "supported_filetypes": [
+                    {
+                        "id": "biologic-mpr",
+                        "template": {
+                            "input_type": "eclab.mpr",
+                        },
+                    }
+                ],
                 "usage": [
                     {
                         "method": "python",
@@ -93,7 +100,7 @@ def test_biologic_extract_no_registry(test_mprs):
                         "method": "pip",
                         "requires_python": ">=3.9",
                         "requirements": None,
-                        "packages": ["yadg~=5.0"],
+                        "packages": ["yadg~=6.0"],
                     }
                 ],
             },

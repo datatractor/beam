@@ -27,6 +27,7 @@ import urllib.error
 import urllib.request
 import venv
 from enum import Enum
+from functools import wraps
 from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable, Optional
@@ -54,10 +55,33 @@ class SupportedUsageScope(Enum):
     DATA = "meta+data"
 
 
+def coerce_preferred(func):
+    """
+    A decorator to coerce :class:`str` types of ``preferred_mode`` and ``preferred_scope``
+    to their :class:`Enum` counterparts.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        mode = kwargs.pop("preferred_mode", None)
+        if isinstance(mode, str):
+            mode = SupportedExecutionMethod(mode)
+        if mode is not None:
+            kwargs["preferred_mode"] = mode
+        scope = kwargs.pop("preferred_scope", None)
+        if isinstance(scope, str):
+            scope = SupportedUsageScope(scope)
+        if scope is not None:
+            kwargs["preferred_scope"] = scope
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def run_beam():
     argparser = argparse.ArgumentParser(
         prog="beam",
-        description="""CLI for datatractor extractors that takes a filename and a filetype, then installs and runs an appropriate extractor, if available, from the chosen registry (default: https://registry.datatractor.org/). Filetype IDs can be found in the registry API at e.g., https://registry.datatractor.org/api/filetypes. If a matching extractor is found at https://registry.datatractor.org/api/extractors, it will be installed into a virtual environment local to the beam installation. The results of the extractor will be written out to a file at --outfile, or in the default location for that output file type.""",
+        description="""CLI for Datatractor extractors that takes a filename and a filetype, then installs and runs an appropriate extractor, if available, from the chosen registry (default: https://registry.datatractor.org/). Filetype IDs can be found in the registry API at e.g., https://registry.datatractor.org/api/filetypes. If a matching extractor is found at https://registry.datatractor.org/api/extractors, it will be installed into a virtual environment local to the beam installation. The results of the extractor will be written out to a file at --outfile, or in the default location for that output file type.""",
     )
 
     argparser.add_argument(
@@ -95,13 +119,105 @@ def run_beam():
     )
 
 
+@coerce_preferred
+def search_filetype(
+    input_type: str,
+    preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
+    preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
+    extractor_definition: dict | None = None,
+    registry_base_url: str = REGISTRY_BASE_URL,
+) -> dict:
+    """Search a registry for an extractor definition matching preferred mode and scope.
+
+    Parameters:
+        input_type: The ID of the ``FileType`` in the registry.
+        preferred_mode: The preferred execution method.
+            If the extractor supports both Python and CLI, this will be used to determine
+            which to use. If the extractor only supports one method, this will be ignored.
+            Accepts the ``SupportedExecutionMethod`` values of "cli" or "python".
+        preferred_scope: The preferred extraction scope.
+            Accepts the ``SupportedUsageScope`` values of "meta+data" (default) or "meta-only".
+        extractor_definition: A dictionary containing the extractor definition to use instead
+            of a registry lookup.
+        registry_base_url: The base URL of the registry to use. Defaults to the
+            |yardsite|_.
+
+    Returns:
+        The matching extractor definition.
+
+    """
+
+    if extractor_definition is not None:
+        extractors = [extractor_definition]
+    else:
+        extractors = fetch_extractors(
+            input_type=input_type,
+            registry_base_url=registry_base_url,
+        )
+
+    matching_definition = None
+    for extractor in extractors:
+        if isinstance(extractor, str):
+            try:
+                request_url = f"{registry_base_url}/extractors/{extractor}"
+                entry = urllib.request.urlopen(request_url)
+            except urllib.error.HTTPError as e:
+                raise RuntimeError(
+                    f"Could not find extractor {extractor!r} in the registry at {request_url!r}.\nFull error: {e}"
+                )
+            extractor = json.loads(entry.read().decode("utf-8"))["data"]
+
+        match = find_matching_usage(
+            usages=extractor["usage"],
+            input_type=input_type,
+            preferred_mode=preferred_mode,
+            preferred_scope=preferred_scope,
+            strict=True,
+        )
+        if match is not None:
+            print(f"Found matching usage with extractor: {extractor['id']!r}")
+            matching_definition = extractor
+            break
+
+    if matching_definition is None:
+        raise RuntimeError(
+            "No extractors found with the preferred execution mode and input type."
+        )
+
+    return matching_definition
+
+
+@coerce_preferred
+def search_extractor(
+    extractor_id: str,
+    registry_base_url: str = REGISTRY_BASE_URL,
+) -> dict:
+    """Search a registry for an ``Extractor`` matching the provided ``extractor_id``.
+
+    Parameters:
+        extractor_id: The ID of the ``FileType`` in the registry.
+        registry_base_url: The base URL of the registry to use. Defaults to the
+            |yardsite|_.
+
+    Returns:
+        The matching extractor definition.
+
+    """
+
+    extractors = fetch_extractors(registry_base_url=registry_base_url)
+    if extractor_id not in extractors:
+        raise RuntimeError("No extractors found with the specified Extractor ID.")
+    return extractors[extractor_id]
+
+
+@coerce_preferred
 def extract(
     input_path: Path | str,
     input_type: str,
     output_path: Path | str | None = None,
     output_type: str | None = None,
-    preferred_mode: SupportedExecutionMethod | str = SupportedExecutionMethod.PYTHON,
-    preferred_scope: SupportedUsageScope | str = SupportedUsageScope.DATA,
+    preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
+    preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
     install: bool = True,
     use_venv: bool = True,
     extractor_definition: dict | None = None,
@@ -121,6 +237,8 @@ def extract(
             If the extractor supports both Python and CLI, this will be used to determine
             which to use. If the extractor only supports one method, this will be ignored.
             Accepts the ``SupportedExecutionMethod`` values of "cli" or "python".
+        preferred_scope: The preferred extraction scope.
+            Accepts the ``SupportedUsageScope`` values of "meta+data" (default) or "meta-only".
         install: Whether to install the extractor package before running it. Defaults to True.
         extractor_definition: A dictionary containing the extractor definition to use instead
             of a registry lookup.
@@ -131,6 +249,7 @@ def extract(
         The output of the extractor, either a Python object or nothing.
 
     """
+
     tmp_path: Optional[Path] = None
     try:
         if isinstance(input_path, str) and re.match("^http[s]://*", input_path):
@@ -145,61 +264,18 @@ def extract(
 
         output_path = Path(output_path) if output_path else None
 
-        if isinstance(preferred_mode, str):
-            preferred_mode = SupportedExecutionMethod(preferred_mode)
-        if isinstance(preferred_scope, str):
-            preferred_scope = SupportedUsageScope(preferred_scope)
-
-        if extractor_definition is None:
-            try:
-                request_url = f"{registry_base_url}/filetypes/{input_type}"
-                response = urllib.request.urlopen(request_url)
-            except urllib.error.HTTPError as e:
-                raise RuntimeError(
-                    f"Could not find file type {input_type!r} in the registry at {request_url!r}.\nFull error: {e}"
-                )
-            json_response = json.loads(response.read().decode("utf-8"))
-            extractors = json_response["data"]["registered_extractors"]
-            if not extractors:
-                raise RuntimeError(
-                    f"No extractors found for file type {input_type!r} in the registry"
-                )
-            elif len(extractors) > 0:
-                print(f"Discovered the following extractors: {extractors}.")
-        else:
-            extractors = [extractor_definition]
-
-        matching_definition = None
-        for extractor in extractors:
-            if isinstance(extractor, str):
-                try:
-                    request_url = f"{registry_base_url}/extractors/{extractor}"
-                    entry = urllib.request.urlopen(request_url)
-                except urllib.error.HTTPError as e:
-                    raise RuntimeError(
-                        f"Could not find extractor {extractor!r} in the registry at {request_url!r}.\nFull error: {e}"
-                    )
-                extractor = json.loads(entry.read().decode("utf-8"))["data"]
-
-            match = find_matching_usage(
-                usages=extractor["usage"],
-                input_type=input_type,
-                preferred_mode=preferred_mode,
-                preferred_scope=preferred_scope,
-                strict=True,
-            )
-            if match is not None:
-                print(f"Found matching usage with extractor: {extractor['id']!r}")
-                matching_definition = extractor
-                break
-
-        if matching_definition is None:
-            raise RuntimeError(
-                "No extractors found with the preferred execution mode and input type."
-            )
-        plan = ExtractorPlan(
-            matching_definition,
+        matching_definition = search_filetype(
+            input_type=input_type,
             preferred_mode=preferred_mode,
+            preferred_scope=preferred_scope,
+            extractor_definition=extractor_definition,
+            registry_base_url=registry_base_url,
+        )
+
+        plan = ExtractorPlan(
+            entry=matching_definition,
+            preferred_mode=preferred_mode,
+            preferred_scope=preferred_scope,
             install=install,
             use_venv=use_venv,
         )
@@ -213,6 +289,45 @@ def extract(
     finally:
         if tmp_path:
             tmp_path.unlink()
+
+
+@coerce_preferred
+def install_extractor(
+    extractor_id: str | None = None,
+    use_venv: bool = True,
+    extractor_definition: dict | None = None,
+    registry_base_url: str = REGISTRY_BASE_URL,
+) -> Any:
+    """Install an ``Extractor`` from a provided definition or by searching registry.
+
+    Parameters:
+        extractor: The ID of the ``Extractor`` in the registry.
+        use_venv: Whether to install the package into a new venv. Defaults to True.
+        extractor_definition: A dictionary containing the extractor definition to use instead
+            of a registry lookup.
+        registry_base_url: The base URL of the registry to use. Defaults to the
+            |yardsite|_.
+
+    Returns:
+        The output of the extractor, either a Python object or nothing.
+
+    """
+
+    if extractor_definition is None:
+        if extractor_id is None:
+            raise RuntimeError("Must provide either Extractor ID or a full definition.")
+        extractor_definition = search_extractor(
+            extractor_id=extractor_id,
+            registry_base_url=registry_base_url,
+        )
+
+    plan = ExtractorPlan(
+        entry=extractor_definition,
+        install=True,
+        use_venv=use_venv,
+    )
+
+    return plan
 
 
 def find_matching_usage(
@@ -267,6 +382,33 @@ def find_matching_usage(
     raise RuntimeError(
         f"Found no matching usage for input_type {input_type!r} with {preferred_mode} and {preferred_scope}"
     )
+
+
+def fetch_extractors(
+    input_type: str | None = None,
+    registry_base_url: str = REGISTRY_BASE_URL,
+) -> list[dict]:
+    try:
+        # Retrieve all extractors
+        if input_type is None:
+            request_url = f"{registry_base_url}/extractors"
+        # Filter on provided type
+        else:
+            request_url = f"{registry_base_url}/filetypes/{input_type}"
+        response = urllib.request.urlopen(request_url)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(
+            f"Could not find file type {input_type!r} in the registry at {request_url!r}.\nFull error: {e}"
+        )
+    json_response = json.loads(response.read().decode("utf-8"))
+    extractors = json_response["data"]["registered_extractors"]
+    if not extractors:
+        raise RuntimeError(
+            f"No extractors found for file type {input_type!r} in the registry"
+        )
+    elif len(extractors) > 0:
+        print(f"Discovered the following extractors: {extractors}.")
+    return extractors
 
 
 class ExtractorPlan:
