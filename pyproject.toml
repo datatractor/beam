@@ -57,7 +57,7 @@ dev = [
 repository = "https://github.com/datatractor/beam"
 
 [project.scripts]
-beam = "beam:run_beam"
+datatractor = "beam:run_datatractor"
 
 [tool.ruff]
 extend-exclude = [
