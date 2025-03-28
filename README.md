@@ -40,16 +40,17 @@ pip install .
 
 ### Usage
 
-Currently, you can use the `extract` function from the `beam` module inside your own Python code:
+#### As a Python module
+To extract data from a file, you can use the `extract` function from the `beam` module inside your own Python code:
 
 ```python
-from beam import extract
+from datatractor_beam import extract
 
 # extract(<input_type>, <input_path>)
 data = extract("./example.mpr",  "biologic-mpr")
 ```
 
-This example will install the first compatible `biologic-mpr` extractor it finds in the registry into a fresh virtualenv (under `./beam-venvs`), and then execute it on the file at `example.mpr`.
+This example will install the first extractor that is compatible with the `biologic-mpr` filetype that it finds in the registry. It will be installed into a fresh virtualenv (under `./beam-venvs`), and then executed on the file at `example.mpr`.
 
 By default, the `extract` function will attempt to use the extractor's Python-based invocation (i.e. the optional `preferred_mode="python"` argument is specified). This means the extractor will be executed from within python, and the returned `data` object will be a Python object as defined (and supported) by the extractor. This may require additional packages to be installed, for examples `pandas` or `xarray`, which are both supported via the installation command `pip install .[formats]` above. If you encounter the following traceback, a missing "format" (such as `xarray` here) is the likely reason:
 
@@ -63,16 +64,25 @@ ModuleNotFoundError: No module named 'xarray'
 Alternatively, if the `preferred_mode="cli"` argument is specified, the extractor will be executed using its command-line invocation. This means the output of the extractor will most likely be a file, which can be further specified using the `output_type` argument:
 
 ```python
-from beam import extract
+from datatractor_beam import extract
 ret = extract("example.mpr", "biologic-mpr", output_path="output.nc", preferred_mode = "cli")
 ```
 
 In this case, the `ret` will be empty bytes, and the output of the extractor should appear in the `output.nc` file.
 
-Finally, `beam` can also be executed from the command line, implying `preferred_mode="cli"`. The command line invocation equivalent to the above Python syntax is:
+#### As a command line utility
+
+The `datatractor` utility supports the following subcommands:
+
+- `beam`: used to extract data from an input file of a known file type,
+- `probe`: used to search the registry for extractors that match a known file type,
+- `yard`: used to fetch the definition of an extractor from the registry, and
+- `install`: used to install an extractor.
+
+In particular, the `extract()` functionality discussed above can also be executed from the command line, implying `preferred_mode="cli"`. The command line invocation equivalent to the above Python syntax is:
 
 ```bash
-beam biologic-mpr example.mpr --outfile output.nc
+datatractor beam biologic-mpr example.mpr --output-path output.nc
 ```
 
 
