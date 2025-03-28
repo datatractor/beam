@@ -118,13 +118,13 @@ def run_datatractor():
     )
 
     beam.add_argument(
-        "--output_path",
+        "--output-path",
         "-o",
         help="Optional path of the output file",
         default=None,
     )
     beam.add_argument(
-        "--preferred_mode",
+        "--preferred-mode",
         help="Preferred extraction mode to use with the Extractor (default: cli).",
         default="cli",
         choices=["cli", "python"],
