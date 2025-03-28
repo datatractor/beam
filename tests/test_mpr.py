@@ -168,7 +168,7 @@ def test_biologic_beam(tmp_path, test_mprs):
             "beam",
             "biologic-mpr",
             str(input_path),
-            "--output_path",
+            "--output-path",
             str(output_path),
         ]
         subprocess.run(task)
