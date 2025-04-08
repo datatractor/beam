@@ -181,13 +181,16 @@ def extract(
                     )
                 extractor = json.loads(entry.read().decode("utf-8"))["data"]
 
-            match = find_matching_usage(
-                usages=extractor["usage"],
-                input_type=input_type,
-                preferred_mode=preferred_mode,
-                preferred_scope=preferred_scope,
-                strict=True,
-            )
+            try:
+                match = find_matching_usage(
+                    usages=extractor["usage"],
+                    input_type=input_type,
+                    preferred_mode=preferred_mode,
+                    preferred_scope=preferred_scope,
+                    strict=True,
+                )
+            except RuntimeError:
+                match = None
             if match is not None:
                 print(f"Found matching usage with extractor: {extractor['id']!r}")
                 matching_definition = extractor
@@ -575,7 +578,12 @@ class ExtractorPlan:
         preferred_mode: SupportedExecutionMethod = SupportedExecutionMethod.PYTHON,
         preferred_scope: SupportedUsageScope = SupportedUsageScope.DATA,
     ) -> tuple[SupportedExecutionMethod, str, str]:
-        usage = find_matching_usage(usages, input_type, preferred_mode, preferred_scope)
+        try:
+            usage = find_matching_usage(
+                usages, input_type, preferred_mode, preferred_scope
+            )
+        except RuntimeError:
+            usage = None
         if not usage:
             raise RuntimeError(
                 f"No matching usage found for {input_type} with {preferred_mode} and {preferred_scope}"
