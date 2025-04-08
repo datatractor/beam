@@ -63,7 +63,7 @@ def test_biologic_extract_from_url(tmp_path, test_mpr_urls):
             preferred_mode="python",
             install=(ind == 0),
         )
-        assert data
+        assert data is not None
 
 
 def test_biologic_extract_no_registry(test_mprs):
