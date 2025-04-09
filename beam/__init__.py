@@ -136,8 +136,7 @@ def run_datatractor():
         help="Searches the registry for Extractors available for <input_type>.",
         description=f"""
             Searches the chosen registry (default: {REGISTRY_BASE_URL}) for Extractors
-            matching the provided input_type and returns the full definition of that
-            Extractor.
+            matching the provided input_type and returns their ID(s).
         """,
     )
 
@@ -267,13 +266,17 @@ def search_filetype(
                 )
             extractor = json.loads(entry.read().decode("utf-8"))["data"]
 
-        match = find_matching_usage(
-            usages=extractor["usage"],
-            input_type=input_type,
-            preferred_mode=preferred_mode,
-            preferred_scope=preferred_scope,
-            strict=True,
-        )
+        try:
+            match = find_matching_usage(
+                usages=extractor["usage"],
+                input_type=input_type,
+                preferred_mode=preferred_mode,
+                preferred_scope=preferred_scope,
+                strict=True,
+            )
+        except RuntimeError:
+            match = None
+
         if match is not None:
             logger.info(f"Found matching usage with extractor: {extractor['id']!r}")
             matching_definition = extractor
