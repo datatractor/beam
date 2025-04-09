@@ -78,7 +78,14 @@ def test_biologic_extract_no_registry(test_mprs):
             install=(ind == 0),
             extractor_definition={
                 "id": "yadg",
-                "supported_filetypes": [{"id": "biologic-mpr"}],
+                "supported_filetypes": [
+                    {
+                        "id": "biologic-mpr",
+                        "template": {
+                            "input_type": "eclab.mpr",
+                        },
+                    }
+                ],
                 "usage": [
                     {
                         "method": "python",
@@ -93,7 +100,7 @@ def test_biologic_extract_no_registry(test_mprs):
                         "method": "pip",
                         "requires_python": ">=3.9",
                         "requirements": None,
-                        "packages": ["yadg~=5.0"],
+                        "packages": ["yadg~=6.0"],
                     }
                 ],
             },
@@ -156,7 +163,14 @@ def test_biologic_beam(tmp_path, test_mprs):
     for ind, test_mpr in enumerate(test_mprs):
         input_path = tmp_path / test_mpr
         output_path = tmp_path / test_mpr.name.replace(".mpr", ".nc")
-        task = ["beam", "biologic-mpr", str(input_path), "--outfile", str(output_path)]
+        task = [
+            "datatractor",
+            "beam",
+            "biologic-mpr",
+            str(input_path),
+            "--output-path",
+            str(output_path),
+        ]
         subprocess.run(task)
         assert output_path.exists()
         break
