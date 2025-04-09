@@ -214,6 +214,10 @@ def run_datatractor():
     try:
         ret = func(**vars(args))
         if ret is not None and len(ret) > 0:
+            try:
+                ret = json.dumps(ret)
+            except json.JSONDecodeError:
+                pass
             print(ret)
     except RuntimeError as e:
         print(e)
@@ -252,7 +256,7 @@ def search_filetype(
         extractors = fetch_registered_extractors(
             input_type=input_type,
             registry_base_url=registry_base_url,
-        )
+        ).get("registered_extractors", [])
 
     matching_definition = None
     for extractor in extractors:
@@ -490,7 +494,7 @@ def find_matching_usage(
 def fetch_registered_extractors(
     input_type: str,
     registry_base_url: str = REGISTRY_BASE_URL,
-) -> list[dict]:
+) -> dict:
     try:
         request_url = f"{registry_base_url}/filetypes/{input_type}"
         response = urllib.request.urlopen(request_url)
@@ -507,7 +511,7 @@ def fetch_registered_extractors(
         )
     elif len(extractors) > 0:
         logger.info("Discovered the following extractors: %s.", extractors)
-    return extractors
+    return {"id": input_type, "registered_extractors": extractors}
 
 
 class ExtractorPlan:
