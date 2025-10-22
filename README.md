@@ -51,7 +51,7 @@ pip install .
 To extract data from a file, you can use the `extract` function from the `beam` module inside your own Python code:
 
 ```python
-from datatractor_beam import extract
+from beam import extract
 
 # extract(<input_type>, <input_path>)
 data = extract("./example.mpr",  "biologic-mpr")
@@ -71,7 +71,7 @@ ModuleNotFoundError: No module named 'xarray'
 Alternatively, if the `preferred_mode="cli"` argument is specified, the extractor will be executed using its command-line invocation. This means the output of the extractor will most likely be a file, which can be further specified using the `output_type` argument:
 
 ```python
-from datatractor_beam import extract
+from beam import extract
 ret = extract("example.mpr", "biologic-mpr", output_path="output.nc", preferred_mode = "cli")
 ```
 
