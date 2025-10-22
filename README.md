@@ -48,7 +48,7 @@ pip install .
 ### Usage
 
 #### As a Python module
-To extract data from a file, you can use the `extract` function from the `beam` module inside your own Python code:
+To extract data from a file, you can use the `extract` function from the `datatractor_beam` module inside your own Python code:
 
 ```python
 from datatractor_beam import extract
