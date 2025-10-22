@@ -15,7 +15,14 @@
 Repository containing the reference implementation of the Datatractor API, published at [![Datatractor Yard](https://badgen.net/static/%F0%9F%9A%9Cdatatractor/yard)](https://yard.datatractor.org/).
 
 
-For more information, see the preprint:
+For more information, see the publication:
+
+> **Datatractor: Metadata, automation, and registries for extractor interoperability in the chemical and materials sciences**  
+> Matthew L. Evans, Gian-Marco Rignanese, David Elbert & Peter Kraus  
+> MRS Bulletin, 50, 838-845 (2025) [DOI: 10.1557/s43577-025-00925-8](https://link.springer.com/article/10.1557/s43577-025-00925-8)
+
+
+or preprint at:
 
 > **Datatractor: Metadata, automation, and registries for extractor interoperability in the chemical and materials sciences**  
 > Matthew L. Evans, Gian-Marco Rignanese, David Elbert & Peter Kraus  
