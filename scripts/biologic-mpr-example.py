@@ -1,7 +1,7 @@
 import pathlib
 import urllib.request
 
-from beam import extract
+from datatractor_beam import extract
 
 # Download an example MPR file from the registry
 download_path = pathlib.Path(__file__).parent / "data" / "example.mpr"
