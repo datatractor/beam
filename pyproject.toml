@@ -9,7 +9,7 @@ source = "vcs"
 version-file = "_version.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["beam"]
+packages = ["datatractor_beam"]
 
 [project]
 name = "datatractor-beam"
@@ -57,7 +57,7 @@ dev = [
 repository = "https://github.com/datatractor/beam"
 
 [project.scripts]
-datatractor = "beam:run_datatractor"
+datatractor = "datatractor_beam:run_datatractor"
 
 [tool.ruff]
 extend-exclude = [

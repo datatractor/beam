@@ -7,7 +7,7 @@ Datatractor Beam: Reference implementation of the Datatractor API
    :hidden:
    :glob:
 
-   apidoc/beam
+   apidoc/datatractor_beam
 
 
 Documentation of |beamrepo|_, the reference implementation of the Datatractor API,

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from beam import ExtractorPlan, SupportedExecutionMethod, extract
+from datatractor_beam import ExtractorPlan, SupportedExecutionMethod, extract
 
 
 @pytest.fixture
